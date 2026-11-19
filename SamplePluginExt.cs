@@ -99,6 +99,10 @@ namespace SamplePlugin
 		/// return an item for.</param>
 		public override ToolStripMenuItem GetMenuItem(PluginMenuType t)
 		{
+			// Entry context menu: push the custom fields of the entry to GitHub.
+			// The sample items below stay on the main menu, untouched.
+			if(t == PluginMenuType.Entry) return this.CreateSyncMenuItem();
+
 			// Our menu item below is intended for the main location(s),
 			// not for other locations like the group or entry menus
 			if(t != PluginMenuType.Main) return null;
@@ -142,6 +146,35 @@ namespace SamplePlugin
 			};
 
 			return tsmi;
+		}
+
+		private ToolStripMenuItem CreateSyncMenuItem()
+		{
+			ToolStripMenuItem tsmi = new ToolStripMenuItem("Sync to GitHub Secrets\u2026");
+			tsmi.Click += this.OnSyncSecrets;
+			return tsmi;
+		}
+
+		private void OnSyncSecrets(object sender, EventArgs e)
+		{
+			PwDatabase pd = m_host.Database;
+			if((pd == null) || !pd.IsOpen) return;
+
+			PwEntry[] selected = m_host.MainWindow.GetSelectedEntries();
+			if((selected == null) || (selected.Length != 1))
+			{
+				MessageBox.Show(m_host.MainWindow,
+					"Select exactly one entry: the entry holds the repository list " +
+					"and the secrets to push.",
+					"Sync to GitHub Secrets", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				return;
+			}
+
+			SecretEntryModel model = SecretEntryModel.Analyze(selected[0]);
+			using(SyncDialog dialog = new SyncDialog(model))
+			{
+				dialog.ShowDialog(m_host.MainWindow);
+			}
 		}
 
 		private void OnMenuAddGroups(object sender, EventArgs e)
