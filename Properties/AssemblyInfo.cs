@@ -1,5 +1,8 @@
 /*
-  SamplePlugin - An Example KeePass Plugin
+  KeePassGitHubSecrets - push entry custom fields to GitHub Actions secrets
+  Copyright (C) 2026 shijianjs
+
+  Based on SamplePlugin, an example KeePass plugin
   Copyright (C) 2003-2019 Dominik Reichl <dominik.reichl@t-online.de>
 
   This program is free software; you can redistribute it and/or modify
@@ -18,16 +21,15 @@
 */
 
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General assembly properties
-[assembly: AssemblyTitle("SamplePlugin")]
-[assembly: AssemblyDescription("An example plugin for developers that demonstrates how to perform certain operations.")]
+[assembly: AssemblyTitle("KeePassGitHubSecrets")]
+[assembly: AssemblyDescription("Synchronises secrets stored as entry custom fields to GitHub Actions secrets via the gh CLI.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Dominik Reichl")]
-[assembly: AssemblyProduct("KeePass Plugin")]
-[assembly: AssemblyCopyright("Copyright © 2003-2019 Dominik Reichl")]
+[assembly: AssemblyCompany("shijianjs")]
+[assembly: AssemblyProduct("KeePassGitHubSecrets")]
+[assembly: AssemblyCopyright("Copyright © 2026 shijianjs; based on SamplePlugin © 2003-2019 Dominik Reichl")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -35,8 +37,8 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // Assembly GUID
-[assembly: Guid("1cb02044-8fc3-40f7-9b0f-29cce26d8840")]
+[assembly: Guid("6f0a1c53-2b7a-4d9e-9a51-0c5c8f4b1d21")]
 
 // Assembly version information
-[assembly: AssemblyVersion("2.20.0.*")]
-[assembly: AssemblyFileVersion("2.20.0.0")]
+[assembly: AssemblyVersion("0.1.0.*")]
+[assembly: AssemblyFileVersion("0.1.0.0")]
