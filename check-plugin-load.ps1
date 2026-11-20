@@ -118,8 +118,21 @@ if(-not (Test-Path -LiteralPath $Config)) {
 $dllItem = Get-Item -LiteralPath $Dll
 $hash = Get-Sha256Base64 $dllItem.FullName
 
+# KeePass decides "is this a plugin?" from the ProductName of the version
+# information block: it must be exactly "KeePass Plugin". Any other value makes
+# the DLL invisible to the plugin loader, without any error message.
+$productName = $dllItem.VersionInfo.ProductName
 Write-Output "Plugin : $($dllItem.FullName) ($($dllItem.Length) bytes, $($dllItem.LastWriteTime.ToString('yyyy-MM-dd HH:mm:ss')))"
+Write-Output "Product: $productName   (must be 'KeePass Plugin')"
+Write-Output "Title  : $($dllItem.VersionInfo.FileDescription)"
+Write-Output "Version: $($dllItem.VersionInfo.FileVersion)"
 Write-Output "Hash   : $hash"
+
+if($productName -ne 'KeePass Plugin') {
+	Write-Output 'ERROR: ProductName is not "KeePass Plugin", so KeePass will not load it at all.'
+	Write-Output '       Set [assembly: AssemblyProduct("KeePass Plugin")] in Properties\AssemblyInfo.cs.'
+	exit 2
+}
 
 # An unchanged DLL keeps its hash, so a recorded entry may come from an earlier
 # run; only a hash that was not recorded before proves this run loaded something new.
