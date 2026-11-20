@@ -93,6 +93,11 @@ KeePass、还原配置并把这次的记录补回去。必须 `/t:Rebuild`：增
 - 插件不写数据库：只 `Strings.ReadSafe` 读字段。要「回写同步时间」之类的功能得先改 README。
 - `gh` 调用放到后台线程，UI 线程只更新进度与结果（`Process.WaitForExit` 不能跑在 UI 线程上）。
 - 目标仓库只能来自 `GitHubRepos` 字段，对话框不提供自由输入。
+- **界面文案一律走 `Str.T` / `Str.F`，不要在代码里直接写英文**。`Strings.cs` 里英文原文就是 key，
+  中文是唯一另一语言；语言取自 `KeePass.Program.Translation.Properties.Iso6391Code`（`zh*` 即中文），
+  取不到时回落到 Windows 显示语言。新增一条文案必须同时补中英两份。
+- **窗口按 DPI 缩放**：`SyncDialog` 用 `Graphics.DpiX / 96` 得到 `m_fScale`，所有坐标/尺寸过 `S()` / `Sz()`
+  换算，`AutoScaleMode = None`；布局用 `TableLayoutPanel`，不要再写死 `Location`（200% 缩放下必炸）。
 - 文件编码/换行保持仓库现状：`.cs` 与 `AssemblyInfo.cs` 是无 BOM 的 UTF-8，`.csproj` / `.sln`
   带 BOM，源码全 CRLF；新增文档用 UTF-8 无 BOM + LF（与 README 一致）。
 
@@ -105,6 +110,10 @@ flowchart LR
     EXT --> MODEL["SecretEntryModel.cs<br/>字段解析（纯逻辑）"]
     EXT --> DIALOG["SyncDialog.cs<br/>WinForms 确认/结果窗口"]
     DIALOG --> GH["GhCli.cs<br/>gh 定位、认证检查、stdin 传值"]
+    DIALOG --> STR["Strings.cs<br/>中英文案（英文原文做 key）"]
+    EXT --> STR
+    MODEL --> STR
+    GH --> STR
     CSPROJ --> INFO["Properties/AssemblyInfo.cs"]
     CSPROJ --> DEPLOY["DeployPlugin 目标 → dist\\KeePass-2.62\\Plugins"]
 ```

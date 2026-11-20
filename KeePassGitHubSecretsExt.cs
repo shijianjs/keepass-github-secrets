@@ -25,7 +25,10 @@ namespace KeePassGitHubSecrets
 	// Namespace name 'KeePassGitHubSecrets' + 'Ext' = 'KeePassGitHubSecretsExt'
 	public sealed class KeePassGitHubSecretsExt : Plugin
 	{
-		private const string MenuText = "Sync to GitHub Secrets\u2026";
+		private static string MenuText
+		{
+			get { return Str.T("Sync to GitHub Secrets\u2026"); }
+		}
 
 		private IPluginHost m_host = null;
 
@@ -62,8 +65,8 @@ namespace KeePassGitHubSecrets
 			if((selected == null) || (selected.Length != 1))
 			{
 				MessageBox.Show(m_host.MainWindow,
-					"Select exactly one entry: the entry holds the repository list " +
-					"and the secrets to push.",
+					Str.T("Select exactly one entry: the entry holds the repository list " +
+						"and the secrets to push."),
 					MenuText, MessageBoxButtons.OK, MessageBoxIcon.Information);
 				return;
 			}

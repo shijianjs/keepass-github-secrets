@@ -33,7 +33,7 @@ namespace KeePassGitHubSecrets
 
 		public override string ToString()
 		{
-			return Name + " (" + ValueLength.ToString() + " chars)";
+			return Str.F("{0} ({1} chars)", Name, ValueLength);
 		}
 	}
 
@@ -116,8 +116,8 @@ namespace KeePassGitHubSecrets
 
 			if((text == null) || (text.Trim().Length == 0))
 			{
-				Warnings.Add("This entry has no \"" + RepositoryField +
-					"\" field, so there is no repository to sync to.");
+				Warnings.Add(Str.F("This entry has no \"{0}\" field, so there is no repository to sync to.",
+					RepositoryField));
 				return;
 			}
 
@@ -130,8 +130,8 @@ namespace KeePassGitHubSecrets
 
 				if(!s_reRepository.IsMatch(line))
 				{
-					Warnings.Add("Line " + lineNumber.ToString() + " is not owner/repo: " +
-						Shorten(rawLine.Trim(), 60));
+					Warnings.Add(Str.F("Line {0} is not owner/repo: {1}",
+						lineNumber, Shorten(rawLine.Trim(), 60)));
 					continue;
 				}
 				if(Repositories.Contains(line)) continue; // duplicate line
@@ -148,8 +148,7 @@ namespace KeePassGitHubSecrets
 
 				if(!s_reSecretName.IsMatch(key))
 				{
-					Warnings.Add("Field \"" + key +
-						"\" is not a valid GitHub secret name, skipped.");
+					Warnings.Add(Str.F("Field \"{0}\" is not a valid GitHub secret name, skipped.", key));
 					continue;
 				}
 

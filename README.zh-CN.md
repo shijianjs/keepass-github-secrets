@@ -69,8 +69,8 @@ flowchart TD
    MAVEN_CENTRAL_SIGNING_KEY    → 值
    ```
 
-4. 右键该条目 → `Sync to GitHub Secrets…`（插件界面文案沿用英文，不做本地化），取消掉这次
-   不想推的项，按 **Sync**。
+4. 右键该条目 → `同步到 GitHub Secrets…`（跟随 KeePass 的界面语言：中文环境显示中文，英文环境显示
+   `Sync to GitHub Secrets…`），取消掉这次不想推的项，按 **同步**。
 5. 结果表按「仓库 × 密钥」逐行给出退出状态；失败时附带 `gh` 报错的第一行。
 
 数据库不会被写回：插件只读字段、只对 GitHub 说话。

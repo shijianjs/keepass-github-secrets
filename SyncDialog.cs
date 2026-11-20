@@ -60,7 +60,7 @@ namespace KeePassGitHubSecrets
 			if(m_bBusy)
 			{
 				e.Cancel = true;
-				m_lblStatus.Text = "Wait for the running sync to finish.";
+				m_lblStatus.Text = Str.T("Wait for the running sync to finish.");
 			}
 			base.OnFormClosing(e);
 		}
@@ -79,7 +79,7 @@ namespace KeePassGitHubSecrets
 			// Manual scaling: leave WinForms auto-scaling out of it.
 			AutoScaleMode = AutoScaleMode.None;
 
-			Text = "Sync to GitHub Secrets";
+			Text = Str.T("Sync to GitHub Secrets");
 			FormBorderStyle = FormBorderStyle.FixedDialog;
 			MaximizeBox = false;
 			MinimizeBox = false;
@@ -104,7 +104,7 @@ namespace KeePassGitHubSecrets
 			m_clbRepositories.IntegralHeight = false;
 
 			GroupBox grpRepositories = new GroupBox();
-			grpRepositories.Text = "Repositories (" + SecretEntryModel.RepositoryField + ")";
+			grpRepositories.Text = Str.F("Repositories ({0})", SecretEntryModel.RepositoryField);
 			grpRepositories.Dock = DockStyle.Fill;
 			grpRepositories.Padding = new Padding(S(8), captionHeight, S(8), S(8));
 			grpRepositories.Margin = new Padding(0, 0, gap, 0);
@@ -116,7 +116,7 @@ namespace KeePassGitHubSecrets
 			m_clbSecrets.IntegralHeight = false;
 
 			GroupBox grpSecrets = new GroupBox();
-			grpSecrets.Text = "Secrets (field names, values stay hidden)";
+			grpSecrets.Text = Str.T("Secrets (field names, values stay hidden)");
 			grpSecrets.Dock = DockStyle.Fill;
 			grpSecrets.Padding = new Padding(S(8), captionHeight, S(8), S(8));
 			grpSecrets.Margin = new Padding(0);
@@ -148,15 +148,15 @@ namespace KeePassGitHubSecrets
 			m_lvResults.HideSelection = false;
 			m_lvResults.MultiSelect = false;
 			m_lvResults.Margin = new Padding(0, 0, 0, gap);
-			m_lvResults.Columns.Add("Repository", S(200));
-			m_lvResults.Columns.Add("Secret", S(210));
-			m_lvResults.Columns.Add("Result", S(70));
-			m_lvResults.Columns.Add("Message", S(260));
+			m_lvResults.Columns.Add(Str.T("Repository"), S(200));
+			m_lvResults.Columns.Add(Str.T("Secret"), S(210));
+			m_lvResults.Columns.Add(Str.T("Result"), S(70));
+			m_lvResults.Columns.Add(Str.T("Message"), S(260));
 
 			m_lblStatus = new Label();
 			m_lblStatus.Dock = DockStyle.Fill;
 			m_lblStatus.TextAlign = ContentAlignment.MiddleLeft;
-			m_lblStatus.Text = "Ready.";
+			m_lblStatus.Text = Str.T("Ready.");
 			m_lblStatus.Margin = new Padding(0);
 
 			m_pbProgress = new ProgressBar();
@@ -164,14 +164,14 @@ namespace KeePassGitHubSecrets
 			m_pbProgress.Margin = new Padding(0, S(6), gap, 0);
 
 			m_btnSync = new Button();
-			m_btnSync.Text = "Sync";
+			m_btnSync.Text = Str.T("Sync");
 			m_btnSync.AutoSize = true;
 			m_btnSync.MinimumSize = Sz(84, 28);
 			m_btnSync.Margin = new Padding(0, 0, S(4), 0);
 			m_btnSync.Click += this.OnSyncClick;
 
 			m_btnClose = new Button();
-			m_btnClose.Text = "Close";
+			m_btnClose.Text = Str.T("Close");
 			m_btnClose.AutoSize = true;
 			m_btnClose.MinimumSize = Sz(84, 28);
 			m_btnClose.Margin = new Padding(0);
@@ -232,9 +232,8 @@ namespace KeePassGitHubSecrets
 
 		private void FillLists()
 		{
-			m_lblSummary.Text = "Entry \u201c" + m_model.EntryTitle + "\u201d \u2014 " +
-				m_model.Repositories.Count.ToString() + " repositories \u00d7 " +
-				m_model.Secrets.Count.ToString() + " secrets";
+			m_lblSummary.Text = Str.F("Entry \u201c{0}\u201d \u2014 {1} repositories \u00d7 {2} secrets",
+				m_model.EntryTitle, m_model.Repositories.Count, m_model.Secrets.Count);
 
 			foreach(string repository in m_model.Repositories)
 				m_clbRepositories.Items.Add(repository, true);
@@ -247,9 +246,9 @@ namespace KeePassGitHubSecrets
 				List<string> shown = new List<string>();
 				for(int i = 0; (i < m_model.Warnings.Count) && (i < 3); ++i)
 					shown.Add(m_model.Warnings[i]);
-				string text = "Skipped: " + string.Join("  ", shown.ToArray());
+				string text = Str.F("Skipped: {0}", string.Join("  ", shown.ToArray()));
 				if(m_model.Warnings.Count > shown.Count)
-					text += "  (+" + (m_model.Warnings.Count - shown.Count).ToString() + " more)";
+					text += Str.F(" (+{0} more)", m_model.Warnings.Count - shown.Count);
 				m_lblWarnings.Text = text;
 			}
 
@@ -257,10 +256,10 @@ namespace KeePassGitHubSecrets
 			{
 				m_btnSync.Enabled = false;
 				if(m_model.Secrets.Count == 0)
-					m_lblStatus.Text = "No custom field to push as a secret.";
+					m_lblStatus.Text = Str.T("No custom field to push as a secret.");
 				else if(m_model.Repositories.Count == 0)
-					m_lblStatus.Text = "No repository listed in \"" +
-						SecretEntryModel.RepositoryField + "\".";
+					m_lblStatus.Text = Str.F("No repository listed in \"{0}\".",
+						SecretEntryModel.RepositoryField);
 			}
 		}
 
@@ -278,7 +277,7 @@ namespace KeePassGitHubSecrets
 
 			if((repositories.Count == 0) || (secrets.Count == 0))
 			{
-				MessageBox.Show(this, "Select at least one repository and one secret.",
+				MessageBox.Show(this, Str.T("Select at least one repository and one secret."),
 					Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
 				return;
 			}
@@ -287,8 +286,8 @@ namespace KeePassGitHubSecrets
 			if(ghPath == null)
 			{
 				MessageBox.Show(this,
-					"gh.exe (the GitHub CLI) was not found on PATH or in the Scoop shims.\r\n\r\n" +
-					"Install it with \"scoop install gh\" and run \"gh auth login\" once.",
+					Str.T("gh.exe (the GitHub CLI) was not found on PATH or in the Scoop shims.\r\n\r\n" +
+						"Install it with \"scoop install gh\" and run \"gh auth login\" once."),
 					Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return;
 			}
@@ -297,7 +296,7 @@ namespace KeePassGitHubSecrets
 			m_pbProgress.Minimum = 0;
 			m_pbProgress.Maximum = repositories.Count * secrets.Count;
 			m_pbProgress.Value = 0;
-			m_lblStatus.Text = "Syncing\u2026";
+			m_lblStatus.Text = Str.T("Syncing\u2026");
 			SetBusy(true);
 
 			Thread worker = new Thread(delegate()
@@ -311,7 +310,7 @@ namespace KeePassGitHubSecrets
 
 		private void SyncWorker(List<string> repositories, List<SecretField> secrets, string ghPath)
 		{
-			Post(delegate() { m_lblStatus.Text = "Checking gh authentication\u2026"; });
+			Post(delegate() { m_lblStatus.Text = Str.T("Checking gh authentication\u2026"); });
 
 			GhResult auth = GhCli.CheckAuth(ghPath);
 			if(!auth.Success)
@@ -319,7 +318,7 @@ namespace KeePassGitHubSecrets
 				string message = auth.Message;
 				Post(delegate()
 				{
-					m_lblStatus.Text = "Not authenticated.";
+					m_lblStatus.Text = Str.T("Not authenticated.");
 					SetBusy(false);
 					MessageBox.Show(this, message, Text,
 						MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -368,7 +367,7 @@ namespace KeePassGitHubSecrets
 					{
 						ListViewItem item = new ListViewItem(repositoryCopy);
 						item.SubItems.Add(nameCopy);
-						item.SubItems.Add(successCopy ? "OK" : "FAILED");
+						item.SubItems.Add(successCopy ? Str.T("OK") : Str.T("FAILED"));
 						item.SubItems.Add(messageCopy);
 						if(!successCopy) item.ForeColor = Color.Firebrick;
 						m_lvResults.Items.Add(item);
@@ -377,9 +376,8 @@ namespace KeePassGitHubSecrets
 						int next = m_pbProgress.Value + 1;
 						m_pbProgress.Value = (next > m_pbProgress.Maximum)
 							? m_pbProgress.Maximum : next;
-						m_lblStatus.Text = doneCopy.ToString() + "/" + total.ToString() +
-							" \u2014 " + succeededCopy.ToString() + " ok, " +
-							failedCopy.ToString() + " failed";
+						m_lblStatus.Text = Str.F("{0}/{1} \u2014 {2} ok, {3} failed",
+							doneCopy, total, succeededCopy, failedCopy);
 					});
 				}
 			}
@@ -387,8 +385,8 @@ namespace KeePassGitHubSecrets
 			Post(delegate()
 			{
 				SetBusy(false);
-				m_lblStatus.Text = "Finished: " + succeeded.ToString() + " ok, " +
-					failed.ToString() + " failed, " + total.ToString() + " calls.";
+				m_lblStatus.Text = Str.F("Finished: {0} ok, {1} failed, {2} calls.",
+					succeeded, failed, total);
 			});
 		}
 

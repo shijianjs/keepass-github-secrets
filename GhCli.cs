@@ -69,15 +69,15 @@ namespace KeePassGitHubSecrets
 		public static GhResult CheckAuth(string executablePath)
 		{
 			if(string.IsNullOrEmpty(executablePath))
-				return new GhResult(false, "gh.exe was not found on PATH or in the Scoop shims.");
+				return new GhResult(false, Str.T("gh.exe was not found on PATH or in the Scoop shims."));
 
 			GhResult result = Run(executablePath, "auth status", null);
 			if(result.Success) return result;
 
 			return new GhResult(false,
-				"gh is not authenticated.\r\n\r\n" +
-				"Run \"gh auth login\" in a terminal, then try again.\r\n\r\n" +
-				result.Message);
+				Str.F("gh is not authenticated.\r\n\r\n" +
+					"Run \"gh auth login\" in a terminal, then try again.\r\n\r\n{0}",
+					result.Message));
 		}
 
 		/// <summary>Writes one secret. The value travels on stdin only, so it never
@@ -86,13 +86,13 @@ namespace KeePassGitHubSecrets
 			string name, string value)
 		{
 			if(string.IsNullOrEmpty(executablePath))
-				return new GhResult(false, "gh.exe was not found on PATH or in the Scoop shims.");
+				return new GhResult(false, Str.T("gh.exe was not found on PATH or in the Scoop shims."));
 			if(!IsValidRepository(repository))
-				return new GhResult(false, "Invalid repository: " + repository);
+				return new GhResult(false, Str.F("Invalid repository: {0}", repository));
 			if(!IsValidSecretName(name))
-				return new GhResult(false, "Invalid secret name: " + name);
+				return new GhResult(false, Str.F("Invalid secret name: {0}", name));
 			if((value == null) || (value.Length == 0))
-				return new GhResult(false, "The field is empty, skipped.");
+				return new GhResult(false, Str.T("The field is empty, skipped."));
 
 			return Run(executablePath,
 				"secret set " + name + " --repo " + repository, value);
@@ -145,7 +145,7 @@ namespace KeePassGitHubSecrets
 				process = new Process();
 				process.StartInfo = startInfo;
 				if(!process.Start())
-					return new GhResult(false, "Could not start " + executablePath);
+					return new GhResult(false, Str.F("Could not start {0}", executablePath));
 
 				// stdout/stderr are drained on their own threads so neither pipe can
 				// block the child while we are writing stdin.
@@ -184,7 +184,7 @@ namespace KeePassGitHubSecrets
 				{
 					try { process.Kill(); } catch(Exception) { }
 					return new GhResult(false,
-						"gh did not finish within " + (TimeoutMs / 1000).ToString() + " s.");
+						Str.F("gh did not finish within {0} s.", TimeoutMs / 1000));
 				}
 
 				stdoutThread.Join(2000);

@@ -74,7 +74,8 @@ Rules that follow from that:
    ```
 
 4. Right-click the entry → **Sync to GitHub Secrets…**, untick anything that should not be pushed
-   this time, and press **Sync**.
+   this time, and press **Sync**. The UI follows KeePass' own language: in a Chinese KeePass it
+   reads **同步到 GitHub Secrets…** / **同步**.
 5. The result grid shows one row per repository × secret with the exit status, and the first line
    of `gh`'s error message when a call fails.
 
