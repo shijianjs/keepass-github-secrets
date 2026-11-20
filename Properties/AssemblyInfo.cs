@@ -24,11 +24,14 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 
 // General assembly properties
+// The product name is not free text: KeePass only treats a DLL as a plugin when
+// its version information block says exactly "KeePass Plugin". Anything else
+// makes the plugin loader skip the file without any error.
 [assembly: AssemblyTitle("KeePassGitHubSecrets")]
 [assembly: AssemblyDescription("Synchronises secrets stored as entry custom fields to GitHub Actions secrets via the gh CLI.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("shijianjs")]
-[assembly: AssemblyProduct("KeePassGitHubSecrets")]
+[assembly: AssemblyProduct("KeePass Plugin")]
 [assembly: AssemblyCopyright("Copyright © 2026 shijianjs; based on SamplePlugin © 2003-2019 Dominik Reichl")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -40,5 +43,6 @@ using System.Runtime.InteropServices;
 [assembly: Guid("6f0a1c53-2b7a-4d9e-9a51-0c5c8f4b1d21")]
 
 // Assembly version information
-[assembly: AssemblyVersion("0.1.0.*")]
+// No wildcard version: KeePass compares plugin versions for update checks.
+[assembly: AssemblyVersion("0.1.0.0")]
 [assembly: AssemblyFileVersion("0.1.0.0")]

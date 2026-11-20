@@ -61,15 +61,26 @@ bad name               = dummy（字段名含空格，被跳过并进 warnings�
 `gh secret list --repo shijianjs/keepass-github-secrets`（值不可见，属正常）；清理由
 `gh secret delete TEST_SECRET_ALPHA --repo shijianjs/keepass-github-secrets`。
 
-## 无 GUI 验证（改逻辑后先跑这个）
+## 验证插件真的被加载（改完必跑）
 
-`SyncDialog` 之外的部分都能脱离 KeePass 跑：临时目录里写一个控制台 harness，引用
-`dist\KeePass-2.62\KeePass.exe` 与编译出来的 `KeePassGitHubSecrets.dll`，打开测试库，
-`SecretEntryModel.Analyze(entry)` 后逐对调用 `GhCli.SetSecret`。要点：
+看不看界面都行，命令行就能确认：
 
-- 用 `KeePass.Program.CommonInitialize()` 起库；`KdbxPassword`/`CompositeKey` 打开；
-- 运行目录里要有 `KeePass.exe`、`KeePassLibN*.dll`，否则运行时找不到程序集；
-- 编译器用 `MSBuild\Current\Bin\Roslyn\csc.exe`。
+```powershell
+msbuild KeePassGitHubSecrets.sln /t:Rebuild /p:Configuration=Release
+pwsh -File .\check-plugin-load.ps1 -Run    # 退出码 0 = 已加载
+```
+
+原理：KeePass 把加载过的插件 DLL 的 SHA-256 写进 `dist\KeePass-2.62\KeePass.config.xml`
+的 `<PluginCompatibility>`（`@<hash>@2.62.0.0@1`），**只在正常退出时写**。脚本先比对哈希，
+`-Run` 再临时去掉 `<LastUsedFile>`（否则启动卡在主密码对话框，命令行关不掉）、起停一次
+KeePass、还原配置并把这次的记录补回去。必须 `/t:Rebuild`：增量构建可能跳过编译，哈希不变，
+验证就没有意义。脚本会打印 `Product`/`Title`/`Version`，并在 `ProductName` 不是
+`KeePass Plugin` 时直接退 2。
+
+`SyncDialog` 之外的部分还能脱离 KeePass 单测：临时目录写控制台 harness，引用
+`dist\KeePass-2.62\KeePass.exe` 与插件 DLL，打开测试库后逐对调用
+`SecretEntryModel.Analyze(entry)` + `GhCli.SetSecret`。运行目录要有 `KeePass.exe` 与
+`KeePassLibN*.dll`，编译器用 `MSBuild\Current\Bin\Roslyn\csc.exe`。
 
 ## 代码约定
 
@@ -128,6 +139,10 @@ flowchart LR
 
 ## 坑
 
+- **`AssemblyProduct` 必须是 `"KeePass Plugin"`，改不得**（`Properties/AssemblyInfo.cs`）。KeePass
+  就是靠版本信息块里的 Product name 判断一个 DLL 是不是插件，写成别的值（比如插件名）会被插件
+  加载器**静默跳过**，插件管理器里看不到、配置里也不写记录，且没有任何报错。Title / Description /
+  Company / Copyright / Guid 都可以自由填。版本号别用 `*`（KeePass 比较版本做更新检查）。
 - **不要把 `OutputPath` 之类的属性放进按 `Platform` 判条件的 PropertyGroup**。解决方案与
   Rider 传 `Platform=Any CPU`，工程默认是 `AnyCPU`，条件落空后 `OutputPath` 为空，构建直接报
   「没有为项目设置 BaseOutputPath/OutputPath」（原示例工程能用，是因为 IDE 走了另一种路径）。
@@ -135,8 +150,7 @@ flowchart LR
 - `.sln` 原本是 VS2008 格式（`Format Version 10.00`），用 VS 18 的 msbuild 会报
   `MSB4025 缺少根元素`——已改成 `Format Version 12.00` / `# Visual Studio 17`，别改回去。
 - **`Get-Process KeePass | Select Modules` 看不到插件 DLL**，连已知能加载的插件也不出现；
-  别用它判断「插件是否加载」。可靠信号是 KeePass 菜单里有没有插件项，或配置里
-  `<Application><PluginCompatibility>` 多出条目（KeePass 正常退出时才写）。
+  别用它判断「插件是否加载」。用 `check-plugin-load.ps1`（哈希比对 `PluginCompatibility`）。
 - 插件 DLL 必须直接放在 `Plugins\` 根下，**放进子目录不会被加载**（官方文档说的是「把插件
   文件夹搬进去」，但 2.62 只枚举根目录的 `*.dll`）。
 - 仓库根 `AGENTS.md`（`S:\workspace\github\shijianjs\AGENTS.md`）是上层目录约定，本文件优先；
