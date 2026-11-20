@@ -37,6 +37,15 @@ namespace KeePassGitHubSecrets
 		// Touched from the worker thread: keep it volatile.
 		private volatile bool m_bBusy = false;
 
+		// KeePass runs DPI-aware, so the dialog has to scale itself: WinForms'
+		// font auto-scaling does not kick in here, and hard-coded 96-dpi
+		// coordinates end up under a 200% font. Every size below is multiplied
+		// by this factor.
+		private float m_fScale = 1f;
+
+		private int S(int value) { return (int)Math.Round(value * m_fScale); }
+		private Size Sz(int width, int height) { return new Size(S(width), S(height)); }
+
 		public SyncDialog(SecretEntryModel model)
 		{
 			if(model == null) throw new ArgumentNullException("model");
@@ -60,94 +69,162 @@ namespace KeePassGitHubSecrets
 		{
 			SuspendLayout();
 
+			Font = SystemFonts.MessageBoxFont;
+			using(Graphics graphics = CreateGraphics())
+			{
+				m_fScale = graphics.DpiX / 96f;
+			}
+			if(m_fScale < 1f) m_fScale = 1f;
+
+			// Manual scaling: leave WinForms auto-scaling out of it.
+			AutoScaleMode = AutoScaleMode.None;
+
 			Text = "Sync to GitHub Secrets";
 			FormBorderStyle = FormBorderStyle.FixedDialog;
 			MaximizeBox = false;
 			MinimizeBox = false;
 			ShowInTaskbar = false;
 			StartPosition = FormStartPosition.CenterParent;
-			ClientSize = new Size(780, 560);
-			AutoScaleDimensions = new SizeF(7F, 15F);
-			AutoScaleMode = AutoScaleMode.Font;
-			Font = SystemFonts.MessageBoxFont;
+			ClientSize = Sz(780, 560);
+
+			int lineHeight = Font.Height;
+			int pad = S(12);
+			int gap = S(6);
+			int captionHeight = lineHeight + S(6); // GroupBox title area
 
 			m_lblSummary = new Label();
-			m_lblSummary.Location = new Point(12, 12);
-			m_lblSummary.Size = new Size(756, 20);
+			m_lblSummary.Dock = DockStyle.Fill;
+			m_lblSummary.AutoEllipsis = true;
+			m_lblSummary.TextAlign = ContentAlignment.MiddleLeft;
+			m_lblSummary.Margin = new Padding(0, 0, 0, gap);
+
+			m_clbRepositories = new CheckedListBox();
+			m_clbRepositories.Dock = DockStyle.Fill;
+			m_clbRepositories.CheckOnClick = true;
+			m_clbRepositories.IntegralHeight = false;
 
 			GroupBox grpRepositories = new GroupBox();
 			grpRepositories.Text = "Repositories (" + SecretEntryModel.RepositoryField + ")";
-			grpRepositories.Location = new Point(12, 38);
-			grpRepositories.Size = new Size(330, 196);
-
-			m_clbRepositories = new CheckedListBox();
-			m_clbRepositories.Location = new Point(8, 18);
-			m_clbRepositories.Size = new Size(314, 170);
-			m_clbRepositories.CheckOnClick = true;
-			m_clbRepositories.IntegralHeight = false;
-			m_clbRepositories.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
+			grpRepositories.Dock = DockStyle.Fill;
+			grpRepositories.Padding = new Padding(S(8), captionHeight, S(8), S(8));
+			grpRepositories.Margin = new Padding(0, 0, gap, 0);
 			grpRepositories.Controls.Add(m_clbRepositories);
+
+			m_clbSecrets = new CheckedListBox();
+			m_clbSecrets.Dock = DockStyle.Fill;
+			m_clbSecrets.CheckOnClick = true;
+			m_clbSecrets.IntegralHeight = false;
 
 			GroupBox grpSecrets = new GroupBox();
 			grpSecrets.Text = "Secrets (field names, values stay hidden)";
-			grpSecrets.Location = new Point(352, 38);
-			grpSecrets.Size = new Size(416, 196);
-
-			m_clbSecrets = new CheckedListBox();
-			m_clbSecrets.Location = new Point(8, 18);
-			m_clbSecrets.Size = new Size(400, 170);
-			m_clbSecrets.CheckOnClick = true;
-			m_clbSecrets.IntegralHeight = false;
-			m_clbSecrets.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
+			grpSecrets.Dock = DockStyle.Fill;
+			grpSecrets.Padding = new Padding(S(8), captionHeight, S(8), S(8));
+			grpSecrets.Margin = new Padding(0);
 			grpSecrets.Controls.Add(m_clbSecrets);
 
+			TableLayoutPanel lists = new TableLayoutPanel();
+			lists.Dock = DockStyle.Fill;
+			lists.ColumnCount = 2;
+			lists.RowCount = 1;
+			lists.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 44F));
+			lists.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 56F));
+			lists.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+			lists.Margin = new Padding(0, 0, 0, gap);
+			lists.Controls.Add(grpRepositories, 0, 0);
+			lists.Controls.Add(grpSecrets, 1, 0);
+
 			m_lblWarnings = new Label();
-			m_lblWarnings.Location = new Point(12, 240);
-			m_lblWarnings.Size = new Size(756, 34);
+			m_lblWarnings.Dock = DockStyle.Fill;
 			m_lblWarnings.ForeColor = Color.Firebrick;
 			m_lblWarnings.AutoEllipsis = true;
+			m_lblWarnings.TextAlign = ContentAlignment.TopLeft;
+			m_lblWarnings.Margin = new Padding(0, 0, 0, gap);
 
 			m_lvResults = new ListView();
-			m_lvResults.Location = new Point(12, 278);
-			m_lvResults.Size = new Size(756, 200);
+			m_lvResults.Dock = DockStyle.Fill;
 			m_lvResults.View = View.Details;
 			m_lvResults.FullRowSelect = true;
 			m_lvResults.GridLines = true;
 			m_lvResults.HideSelection = false;
 			m_lvResults.MultiSelect = false;
-			m_lvResults.Columns.Add("Repository", 200);
-			m_lvResults.Columns.Add("Secret", 210);
-			m_lvResults.Columns.Add("Result", 70);
-			m_lvResults.Columns.Add("Message", 260);
+			m_lvResults.Margin = new Padding(0, 0, 0, gap);
+			m_lvResults.Columns.Add("Repository", S(200));
+			m_lvResults.Columns.Add("Secret", S(210));
+			m_lvResults.Columns.Add("Result", S(70));
+			m_lvResults.Columns.Add("Message", S(260));
 
 			m_lblStatus = new Label();
-			m_lblStatus.Location = new Point(12, 492);
-			m_lblStatus.Size = new Size(560, 18);
+			m_lblStatus.Dock = DockStyle.Fill;
+			m_lblStatus.TextAlign = ContentAlignment.MiddleLeft;
 			m_lblStatus.Text = "Ready.";
+			m_lblStatus.Margin = new Padding(0);
 
 			m_pbProgress = new ProgressBar();
-			m_pbProgress.Location = new Point(12, 512);
-			m_pbProgress.Size = new Size(560, 16);
+			m_pbProgress.Dock = DockStyle.Fill;
+			m_pbProgress.Margin = new Padding(0, S(6), gap, 0);
 
 			m_btnSync = new Button();
 			m_btnSync.Text = "Sync";
-			m_btnSync.Location = new Point(592, 506);
-			m_btnSync.Size = new Size(84, 28);
+			m_btnSync.AutoSize = true;
+			m_btnSync.MinimumSize = Sz(84, 28);
+			m_btnSync.Margin = new Padding(0, 0, S(4), 0);
 			m_btnSync.Click += this.OnSyncClick;
 
 			m_btnClose = new Button();
 			m_btnClose.Text = "Close";
-			m_btnClose.Location = new Point(684, 506);
-			m_btnClose.Size = new Size(84, 28);
+			m_btnClose.AutoSize = true;
+			m_btnClose.MinimumSize = Sz(84, 28);
+			m_btnClose.Margin = new Padding(0);
 			m_btnClose.DialogResult = DialogResult.Cancel;
+
+			// RightToLeft: the first control added sits at the right edge.
+			FlowLayoutPanel buttons = new FlowLayoutPanel();
+			buttons.Dock = DockStyle.Fill;
+			buttons.AutoSize = true;
+			buttons.FlowDirection = FlowDirection.RightToLeft;
+			buttons.WrapContents = false;
+			buttons.Margin = new Padding(0);
+			buttons.Controls.Add(m_btnClose);
+			buttons.Controls.Add(m_btnSync);
+
+			int bottomRowHeight = Math.Max(S(30), m_btnSync.PreferredSize.Height);
+
+			TableLayoutPanel bottom = new TableLayoutPanel();
+			bottom.Dock = DockStyle.Fill;
+			bottom.ColumnCount = 2;
+			bottom.RowCount = 2;
+			bottom.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+			bottom.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+			bottom.RowStyles.Add(new RowStyle(SizeType.Absolute, lineHeight + S(4)));
+			bottom.RowStyles.Add(new RowStyle(SizeType.Absolute, bottomRowHeight));
+			bottom.Margin = new Padding(0);
+			bottom.Controls.Add(m_lblStatus, 0, 0);
+			bottom.SetColumnSpan(m_lblStatus, 2);
+			bottom.Controls.Add(m_pbProgress, 0, 1);
+			bottom.Controls.Add(buttons, 1, 1);
+
+			TableLayoutPanel root = new TableLayoutPanel();
+			root.Dock = DockStyle.Fill;
+			root.ColumnCount = 1;
+			root.RowCount = 5;
+			root.Padding = new Padding(pad);
+			root.BackColor = Color.Transparent;
+			root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+			root.RowStyles.Add(new RowStyle(SizeType.Absolute, lineHeight + gap));
+			root.RowStyles.Add(new RowStyle(SizeType.Absolute, S(196)));
+			root.RowStyles.Add(new RowStyle(SizeType.Absolute, lineHeight * 2 + gap));
+			root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+			root.RowStyles.Add(new RowStyle(SizeType.Absolute, lineHeight + S(4) + bottomRowHeight));
+			root.Controls.Add(m_lblSummary, 0, 0);
+			root.Controls.Add(lists, 0, 1);
+			root.Controls.Add(m_lblWarnings, 0, 2);
+			root.Controls.Add(m_lvResults, 0, 3);
+			root.Controls.Add(bottom, 0, 4);
 
 			AcceptButton = m_btnSync;
 			CancelButton = m_btnClose;
 
-			Controls.AddRange(new Control[] {
-				m_lblSummary, grpRepositories, grpSecrets, m_lblWarnings,
-				m_lvResults, m_lblStatus, m_pbProgress, m_btnSync, m_btnClose
-			});
+			Controls.Add(root);
 
 			ResumeLayout(false);
 			PerformLayout();
