@@ -121,6 +121,16 @@ $hash = Get-Sha256Base64 $dllItem.FullName
 Write-Output "Plugin : $($dllItem.FullName) ($($dllItem.Length) bytes, $($dllItem.LastWriteTime.ToString('yyyy-MM-dd HH:mm:ss')))"
 Write-Output "Hash   : $hash"
 
+# An unchanged DLL keeps its hash, so a recorded entry may come from an earlier
+# run; only a hash that was not recorded before proves this run loaded something new.
+$recordedBefore = Test-HashRecorded $Config $hash
+if($recordedBefore) {
+	Write-Output 'Before : already recorded by an earlier run - rebuild to make -Run meaningful'
+}
+else {
+	Write-Output 'Before : not recorded yet'
+}
+
 # ------------------------------------------------------------------- run it
 
 $recorded = $false
@@ -159,6 +169,7 @@ else {
 Write-Output "Config : $Config"
 if($recorded) {
 	Write-Output 'Result : LOADED - KeePass has recorded this exact build'
+	if($recordedBefore) { Write-Output '         (the entry was already there before this run)' }
 	exit 0
 }
 
