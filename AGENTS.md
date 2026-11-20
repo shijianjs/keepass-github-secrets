@@ -157,3 +157,6 @@ flowchart LR
   两份说的不一致时以本文件为准。
 - `dist\` 与 `Build\` 都不入库；不要把 `dist\data\test-database.kdbx` 换成带真实密钥的库提交。
 - 本机 `gh` 用 keyring 存凭据，**不要**在仓库里放 token、`.env`、`gh auth token` 的输出。
+- **多行值会变成 LF**：KeePass 存盘时把字段里的 `\r\n` 归一化成 `\n`（实测 `L1\r\nL2\nL3\r\n` 读回
+  `L1\nL2\nL3\n`），插件把读到的值原样写进 `gh` 的 stdin（UTF-8 无 BOM、不加尾随换行），
+  与旧脚本 `StandardInput.Write($secret)` 行为一致。末尾是否留换行取决于字段本身。
