@@ -14,7 +14,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 
-namespace SamplePlugin
+namespace KeePassGitHubSecrets
 {
 	/// <summary>Outcome of one gh invocation.</summary>
 	public sealed class GhResult

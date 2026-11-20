@@ -1,5 +1,5 @@
 /*
-  SamplePlugin - An Example KeePass Plugin
+  KeePassGitHubSecrets - An Example KeePass Plugin
   Copyright (C) 2003-2019 Dominik Reichl <dominik.reichl@t-online.de>
 
   This program is free software; you can redistribute it and/or modify
@@ -34,12 +34,12 @@ using KeePassLib.Utility;
 
 // The namespace name must be the same as the file name of the
 // plugin without its extension.
-// For example, if you compile a plugin 'SamplePlugin.dll',
-// the namespace must be named 'SamplePlugin'.
-namespace SamplePlugin
+// For example, if you compile a plugin 'KeePassGitHubSecrets.dll',
+// the namespace must be named 'KeePassGitHubSecrets'.
+namespace KeePassGitHubSecrets
 {
-	// Namespace name 'SamplePlugin' + 'Ext' = 'SamplePluginExt'
-	public sealed class SamplePluginExt : Plugin
+	// Namespace name 'KeePassGitHubSecrets' + 'Ext' = 'KeePassGitHubSecretsExt'
+	public sealed class KeePassGitHubSecretsExt : Plugin
 	{
 		// The plugin remembers its host in this variable
 		private IPluginHost m_host = null;
@@ -107,7 +107,7 @@ namespace SamplePlugin
 			// not for other locations like the group or entry menus
 			if(t != PluginMenuType.Main) return null;
 
-			ToolStripMenuItem tsmi = new ToolStripMenuItem("SamplePlugin");
+			ToolStripMenuItem tsmi = new ToolStripMenuItem("KeePassGitHubSecrets");
 
 			// Add menu item 'Add Some Groups'
 			ToolStripMenuItem tsmiAddGroups = new ToolStripMenuItem();
@@ -231,7 +231,7 @@ namespace SamplePlugin
 
 		private void OnFileSaved(object sender, FileSavedEventArgs e)
 		{
-			MessageService.ShowInfo("SamplePlugin has been notified that the user tried to save to the following file:",
+			MessageService.ShowInfo("KeePassGitHubSecrets has been notified that the user tried to save to the following file:",
 				e.Database.IOConnectionInfo.Path, "Result: " +
 				(e.Success ? "success." : "failed."));
 		}

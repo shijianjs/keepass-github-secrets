@@ -1,5 +1,5 @@
 /*
-  SamplePlugin - An Example KeePass Plugin
+  KeePassGitHubSecrets - An Example KeePass Plugin
   Copyright (C) 2003-2019 Dominik Reichl <dominik.reichl@t-online.de>
 
   This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General assembly properties
-[assembly: AssemblyTitle("SamplePlugin")]
+[assembly: AssemblyTitle("KeePassGitHubSecrets")]
 [assembly: AssemblyDescription("An example plugin for developers that demonstrates how to perform certain operations.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Dominik Reichl")]

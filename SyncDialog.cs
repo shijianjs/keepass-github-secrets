@@ -14,7 +14,7 @@ using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace SamplePlugin
+namespace KeePassGitHubSecrets
 {
 	/// <summary>
 	/// Confirmation and progress window: pick repositories and secrets, then run

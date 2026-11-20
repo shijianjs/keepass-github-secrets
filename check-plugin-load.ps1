@@ -29,7 +29,7 @@ $ErrorActionPreference = 'Stop'
 
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 if([string]::IsNullOrWhiteSpace($Dll)) {
-	$Dll = Join-Path $repoRoot 'dist\KeePass-2.62\Plugins\SamplePlugin.dll'
+	$Dll = Join-Path $repoRoot 'dist\KeePass-2.62\Plugins\KeePassGitHubSecrets.dll'
 }
 if([string]::IsNullOrWhiteSpace($Config)) {
 	$Config = Join-Path $repoRoot 'dist\KeePass-2.62\KeePass.config.xml'
@@ -106,7 +106,7 @@ function Invoke-KeePassOnce([string] $exe, [int] $startupSeconds, [int] $exitTim
 
 if(-not (Test-Path -LiteralPath $Dll)) {
 	Write-Output "ERROR: plugin DLL not found: $Dll"
-	Write-Output 'Build first (msbuild SamplePlugin.csproj), or pass -Dll <path>.'
+	Write-Output 'Build first (msbuild KeePassGitHubSecrets.csproj), or pass -Dll <path>.'
 	exit 2
 }
 if(-not (Test-Path -LiteralPath $Config)) {

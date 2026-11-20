@@ -15,7 +15,7 @@ using System.Text.RegularExpressions;
 using KeePassLib;
 using KeePassLib.Security;
 
-namespace SamplePlugin
+namespace KeePassGitHubSecrets
 {
 	/// <summary>One custom field of the entry, i.e. one GitHub secret.</summary>
 	public sealed class SecretField
