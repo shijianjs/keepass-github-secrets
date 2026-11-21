@@ -46,6 +46,11 @@
 
 ![同步对话框：仓库 × 密钥，跳过的项用红字提示](docs/images/sync-dialog.png)
 
+同步成功后，密钥出现在仓库的 **Settings → Secrets and variables → Actions → Repository secrets**
+列表里：
+
+![插件写入的 GitHub 仓库密钥](docs/images/github-repo-secrets.png)
+
 数据库不会被写回：插件只读字段、只对 GitHub 说话。
 
 ## 字段约定

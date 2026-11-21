@@ -49,6 +49,11 @@ What the dialog looks like — repositories on the left, secret field names with
 
 ![Sync dialog: repositories × secrets, with skipped items reported in red](docs/images/sync-dialog.png)
 
+After a successful run the secrets are listed in the repository under **Settings → Secrets and
+variables → Actions → Repository secrets**:
+
+![GitHub repository secrets created by the plugin](docs/images/github-repo-secrets.png)
+
 The database is never written back: the plugin only reads fields and talks to GitHub.
 
 ## Field layout
