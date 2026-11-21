@@ -1,0 +1,62 @@
+name: release
+
+# Only tag pushes (and manual runs) build anything; no per-commit CI.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch KeePass 2.62 portable
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $zip = Join-Path $env:RUNNER_TEMP 'KeePass-2.62.zip'
+          curl.exe -L --fail --retry 3 --retry-delay 5 -o $zip `
+            'https://downloads.sourceforge.net/project/keepass/KeePass%202.x/2.62/KeePass-2.62.zip'
+          $root = Join-Path $env:RUNNER_TEMP 'kp'
+          Expand-Archive -LiteralPath $zip -DestinationPath $root -Force
+          $exe = Get-ChildItem $root -Recurse -Filter 'KeePass.exe' | Select-Object -First 1
+          if (-not $exe) { throw 'KeePass.exe not found in the archive' }
+          # The csproj references dist\KeePass-2.62\KeePass.exe (and DeployPlugin copies there).
+          $dst = Join-Path $env:GITHUB_WORKSPACE 'dist\KeePass-2.62'
+          New-Item -ItemType Directory -Force -Path $dst | Out-Null
+          Copy-Item -Path (Join-Path $exe.Directory.FullName '*') -Destination $dst -Recurse -Force
+
+      - uses: microsoft/setup-msbuild@v2
+
+      - name: Build DLL
+        run: msbuild KeePassGitHubSecrets.sln /t:Rebuild /p:Configuration=Release /v:minimal
+
+      - name: Pack PLGX
+        shell: pwsh
+        run: pwsh -NoProfile -File .\build-plgx.ps1 -KeepDll
+
+      - name: Collect artifacts
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force -Path artifacts | Out-Null
+          $buildRoot = Join-Path $env:GITHUB_WORKSPACE '..\..\Build'
+          $dll = Get-ChildItem $buildRoot -Recurse -Filter 'KeePassGitHubSecrets.dll' | Select-Object -First 1
+          if (-not $dll) { throw 'KeePassGitHubSecrets.dll not found under ..\..\Build' }
+          Copy-Item $dll.FullName 'artifacts\KeePassGitHubSecrets.dll'
+          Copy-Item 'target\plgx\KeePassGitHubSecrets.plgx' 'artifacts\KeePassGitHubSecrets.plgx'
+          Get-ChildItem artifacts | Select-Object Name, Length
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/KeePassGitHubSecrets.dll
+            artifacts/KeePassGitHubSecrets.plgx
+          generate_release_notes: true

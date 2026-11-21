@@ -2,7 +2,7 @@
 
 KeePass 2 插件：把条目里的自定义字段当作 GitHub Actions secrets，点击按钮后通过本机已认证的
 `gh` 推送出去。用户可读的说明在 [README.md](README.md) / [README.zh-CN.md](README.zh-CN.md)，
-本文件只写开发要用的事实。
+构建/打包/发版给人看的说明在 [DEVELOPMENT.md](DEVELOPMENT.md)，本文件只写开发要用的事实。
 
 ## 现状
 
