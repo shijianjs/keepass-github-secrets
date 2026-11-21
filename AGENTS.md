@@ -10,7 +10,10 @@ KeePass 2 插件：把条目里的自定义字段当作 GitHub Actions secrets�
   → 勾选仓库/密钥 → 后台逐个 `gh secret set`。
 - 骨架文件仍保留官方 GPL 版权头（`KeePassGitHubSecretsExt.cs`、`Properties/AssemblyInfo.cs`），
   新文件头部是同一许可的简短声明。
-- `README.md`（英文）与 `README.zh-CN.md`（中文）是设计契约，写代码前先看字段约定。
+- `README.md`（英文）与 `README.zh-CN.md`（中文）现在只写用户视角（安装、字段约定、排查）；
+  构建/打包/发版看 [DEVELOPMENT.md](DEVELOPMENT.md)，字段约定仍以 README 为准。
+- 发版：推 `v*` tag 触发 `.github/workflows/release.yml`，CI 里构建 DLL + 打包 PLGX 并自动建
+  release；CI 不跑逐次 push。
 
 ## 环境（本机实测）
 
