@@ -82,6 +82,27 @@ KeePass、还原配置并把这次的记录补回去。必须 `/t:Rebuild`：增
 `SecretEntryModel.Analyze(entry)` + `GhCli.SetSecret`。运行目录要有 `KeePass.exe` 与
 `KeePassLibN*.dll`，编译器用 `MSBuild\Current\Bin\Roslyn\csc.exe`。
 
+## PLGX 打包与验证
+
+DLL 只能进官方签名的 KeePass；要支持自定义构建，就打 PLGX（源码包，KeePass 加载时自己编译）。
+
+```powershell
+pwsh -File .\build-plgx.ps1            # 暂存 target\plgx\KeePassGitHubSecrets\ → 包装 → 装进 Plugins\
+pwsh -File .\build-plgx.ps1 -Verify    # 再起一次 KeePass，确认 PluginCache 出现新编译的 DLL
+```
+
+- 打包器就是 `KeePass.exe --plgx-create <绝对路径>`，路径不能是相对路径；输出
+  `<暂存目录名>.plgx`，所以暂存目录必须叫 `KeePassGitHubSecrets`。
+- **KeePass 打包的是整个暂存目录**，不是 `.csproj` 的 `<Compile>` 列表：`dist\`（100 MB 的
+  KeePass）绝不能进暂存目录，否则 PLGX 会变成大包。脚本只拷 `*.cs` + `Properties\AssemblyInfo.cs`
+  + 改写过的 `.csproj`（去掉 `Content`/`DeployPlugin`，补 `<LangVersion>5</LangVersion>`）。
+- **PLGX 只能编译 C# 5**（用 .NET 自带编译器）。写代码时别引入 `$"…"`、`?.`、`nameof`、
+  模式匹配等 C# 6+ 语法，否则 DLL 能编、PLGX 加载时报编译失败。
+- 加载验证看缓存：`%LOCALAPPDATA%\KeePass\PluginCache\<hash>\KeePassGitHubSecrets.dll`，时间戳
+  是首次加载那一刻；没有新条目就说明 PLGX 编译失败（加 `--debug` 会落编译日志）。
+- `Plugins\` 里 DLL 优先于 PLGX。想真正走 PLGX 路径，就得把 DLL 挪走（脚本默认挪到
+  `dist\dll-backup\`，`-KeepDll` 可跳过）。
+
 ## 代码约定
 
 - **DLL 名 = 命名空间名 = 插件类名前缀**（KeePass 按文件名找 `Plugin` 子类）：最终是
@@ -116,6 +137,7 @@ flowchart LR
     GH --> STR
     CSPROJ --> INFO["Properties/AssemblyInfo.cs"]
     CSPROJ --> DEPLOY["DeployPlugin 目标 → dist\\KeePass-2.62\\Plugins"]
+    SRC["*.cs + *.csproj"] --> PLGX["build-plgx.ps1 → target\\plgx → *.plgx"]
 ```
 
 命名是硬约束（KeePass 按文件名找插件类）：**DLL 文件名 = 命名空间 = 插件类名去掉 `Ext`**。

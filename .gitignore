@@ -257,3 +257,6 @@ paket-files/
 *.sln.iml
 
 /dist
+
+# PLGX staging (build-plgx.ps1)
+/target/

@@ -110,6 +110,30 @@ leaves `OutputPath` empty (MSB error "no BaseOutputPath/OutputPath").
 Development notes — environment, test database, the legacy PowerShell script this replaces —
 are in [AGENTS.md](AGENTS.md).
 
+### PLGX package (optional)
+
+A DLL only loads in KeePass builds signed with the official key. For custom builds, pack the sources
+into a PLGX and let KeePass compile the plugin itself:
+
+```powershell
+pwsh .\build-plgx.ps1          # stage sources, pack with KeePass --plgx-create, install into Plugins\
+pwsh .\build-plgx.ps1 -Verify  # same, then prove KeePass compiled it (fresh %LOCALAPPDATA%\KeePass\PluginCache entry)
+```
+
+```mermaid
+flowchart LR
+    SRC["*.cs + .csproj<br/>（暂存副本，C# 5）"] --> KP["KeePass.exe --plgx-create"]
+    KP --> PLGX["KeePassGitHubSecrets.plgx"]
+    PLGX --> PLUG["Plugins\\"]
+    PLUG --> CACHE["%LOCALAPPDATA%\\KeePass\\PluginCache\\<hash>\\<br/>首次加载时编译出的 DLL"]
+```
+
+Keep both files in `Plugins\` for a dual package: official KeePass loads the DLL and ignores the
+PLGX, custom builds fall back to the PLGX. `build-plgx.ps1` moves an existing DLL to
+`dist\dll-backup\` so the PLGX path is the one actually exercised (`-KeepDll` skips that). The
+staged copy lives in `target\plgx\` — `dist\` must stay out of it, because KeePass packs the whole
+directory, not just the `<Compile>` list.
+
 ## Security notes
 
 - Secret values go to `gh` on **stdin** only, never on the command line, so they do not appear in

@@ -103,6 +103,29 @@ msbuild KeePassGitHubSecrets.sln /p:Configuration=Release
 开发相关的环境、测试库、以及这个插件要取代的那份 PowerShell 脚本，见
 [AGENTS.md](AGENTS.md)。
 
+### PLGX 包（可选）
+
+DLL 只能在用官方签名密钥构建的 KeePass 里加载。要给自定义构建用，就把源码打成 PLGX，让
+KeePass 加载时自己编译：
+
+```powershell
+pwsh .\build-plgx.ps1          # 暂存源码、用 KeePass --plgx-create 打包、装进 Plugins\
+pwsh .\build-plgx.ps1 -Verify  # 同上，再验证 KeePass 真的编译成功（PluginCache 里有新条目）
+```
+
+```mermaid
+flowchart LR
+    SRC["*.cs + .csproj<br/>（暂存副本，C# 5）"] --> KP["KeePass.exe --plgx-create"]
+    KP --> PLGX["KeePassGitHubSecrets.plgx"]
+    PLGX --> PLUG["Plugins\\"]
+    PLUG --> CACHE["%LOCALAPPDATA%\\KeePass\\PluginCache\\<hash>\\<br/>首次加载时编译出的 DLL"]
+```
+
+两个文件都放进 `Plugins\`（双包）：官方 KeePass 会加载 DLL 并忽略 PLGX，自定义构建则回落到
+PLGX。`build-plgx.ps1` 会把已有的 DLL 挪到 `dist\dll-backup\`，好让这次真正走 PLGX 路径；
+不想挪就加 `-KeepDll`。暂存副本在 `target\plgx\`——`dist\` 必须排除在外，因为 KeePass 打包的是
+整个目录，而不只是 `<Compile>` 列表里的文件。
+
 ## 安全要点
 
 - 密钥只经 **stdin** 交给 `gh`，不进命令行参数，所以不会出现在进程列表里。
