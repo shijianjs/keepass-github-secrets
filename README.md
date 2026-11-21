@@ -40,6 +40,15 @@ Both are the same plugin; ship only one unless you want a dual package.
 5. One grid row per repository × secret shows the exit status and, on failure, the first line of
    `gh`'s error message.
 
+Where to click:
+
+![Entry context menu: Sync to GitHub Secrets…](docs/images/entry-context-menu.png)
+
+What the dialog looks like — repositories on the left, secret field names with lengths on the right
+(values stay hidden), skipped lines and illegal field names in red:
+
+![Sync dialog: repositories × secrets, with skipped items reported in red](docs/images/sync-dialog.png)
+
 The database is never written back: the plugin only reads fields and talks to GitHub.
 
 ## Field layout
